@@ -126,8 +126,10 @@ HERITABILITY = 0.8
 ├── data/              # Input data (VCF or PED/MAP)
 ├── results/           # Analysis outputs
 ├── src/               # Source code
+│   ├── __init__.py
 │   ├── data_processor.py
 │   ├── dataset.py
+│   ├── model_components.py
 │   ├── intra_chr_model.py
 │   ├── inter_chr_model.py
 │   ├── models.py
@@ -164,3 +166,4 @@ This project is released under the [Unlicense](LICENSE), allowing free use witho
 - **GitHub Repository:** https://github.com/qiqizhang0325-afk/Qi_Intra_InterChrInteraction
 - **Wiki Documentation:** https://github.com/qiqizhang0325-afk/Qi_Intra_InterChrInteraction/wiki
 - **Issues:** https://github.com/qiqizhang0325-afk/Qi_Intra_InterChrInteraction/issues
+"# Qi_Intra_InterChr_Interaction" 
