@@ -1,0 +1,31 @@
+# This CITATION.cff file was generated with cffinit.
+# Visit https://bit.ly/cffinit to generate yours today!
+
+cff-version: 1.2.0
+title: QI Intra/Inter Chromosome Interaction Analysis
+message: >-
+  If you use this software, please cite it as below.
+  You can also use the citation information from Zenodo if available.
+type: software
+version: 1.2.0
+authors:
+  - given-names: Qi
+    family-names: Zhang
+    affiliation: Wageningen University & Research
+    orcid: 'https://orcid.org/0000-0000-0000-0000'  # Replace with your ORCID if available
+repository-code: 'https://github.com/qiqizhang0325-afk/Qi_Intra_InterChrInteraction'  # Replace with your repository URL
+url: 'https://github.com/qiqizhang0325-afk/Qi_Intra_InterChrInteraction'  # Replace with your repository URL
+abstract: >-
+  A deep learning framework for analyzing intra-chromosome and inter-chromosome
+  SNP interactions in genome-wide association studies. Uses BiMamba (linear
+  complexity state space models), CNN, and optional Transformer architectures
+  to capture local and long-range genetic interactions.
+keywords:
+  - Bioinformatics
+  - GWAS
+  - Deep Learning
+  - SNP Interaction
+  - Epistasis
+  - BiMamba
+  - PyTorch
+license: Unlicense
