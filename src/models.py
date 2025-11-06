@@ -28,12 +28,19 @@ class IntraChrModel(nn.Module):
     """
     def __init__(self, n_snps, hidden_dim=128, max_epi_pairs=200, 
                  n_cnn_layers=4, n_bimamba_layers=2, n_transformer_layers=0, 
-                 n_heads=8, use_transformer=False):
+                 n_heads=8, use_transformer=False,
+                 interaction_mode='auto', main_weight_threshold=1e-3):
         super(IntraChrModel, self).__init__()
         self.n_snps = n_snps
         self.hidden_dim = hidden_dim
         self.max_epi_pairs = max_epi_pairs
         self.use_transformer = use_transformer  # Whether to use Transformer (optional)
+        # Interaction mode:
+        #  - 'main_nonzero': only pairs among SNPs with main weight > threshold
+        #  - 'all': pairs among all SNPs
+        #  - 'auto': previous behavior (small: all pairs; large: sample biased by main weights)
+        self.interaction_mode = interaction_mode
+        self.main_weight_threshold = float(main_weight_threshold)
         
         # 1. SNP embedding layer
         self.snp_embedding = nn.Linear(1, hidden_dim)
@@ -175,49 +182,72 @@ class IntraChrModel(nn.Module):
         all_epistatic_scores = []
         
         # Use BiMamba-encoded features to extract interaction pairs
-        # If SNP count is not too large, calculate all pairs; otherwise sample
+        # Determine candidate SNP indices based on interaction_mode
+        if self.interaction_mode == 'main_nonzero':
+            candidate = (main_weights > self.main_weight_threshold).nonzero(as_tuple=True)[0].cpu().numpy()
+            if candidate.size < 2:
+                # Fallback to top-2 by main weight if threshold yields <2 SNPs
+                k = min(2, self.n_snps)
+                candidate = torch.topk(main_weights, k=k)[1].cpu().numpy()
+        elif self.interaction_mode == 'all':
+            candidate = np.arange(self.n_snps)
+        else:  # 'auto' (backward-compatible behavior)
+            candidate = np.arange(self.n_snps)
+
+        n_candidate = int(len(candidate))
+        # Number of pairs to consider/sample
         n_pairs_to_sample = min(
-            self.max_epi_pairs, self.n_snps * (self.n_snps - 1) // 2
+            self.max_epi_pairs, max(0, n_candidate * (n_candidate - 1) // 2)
         )
-        
-        if self.n_snps <= 100:  # Small scale: calculate all pairs
-            for i in range(self.n_snps):
-                for j in range(i + 1, self.n_snps):
-                    # Concatenate BiMamba features of two SNPs
-                    # (batch × 2*hidden_dim)
+
+        if n_candidate <= 100:
+            # Calculate all pairs among candidate SNPs
+            for ii in range(n_candidate):
+                i = int(candidate[ii])
+                for jj in range(ii + 1, n_candidate):
+                    j = int(candidate[jj])
                     pair_feat = torch.cat([x_final[:, i], x_final[:, j]], dim=1)
-                    # Scalar
-                    epi_score = torch.sigmoid(
-                        self.epistatic_pair(pair_feat)
-                    ).mean(dim=0).squeeze()
+                    epi_score = torch.sigmoid(self.epistatic_pair(pair_feat)).mean(dim=0).squeeze()
                     all_epistatic_pairs.append((i, j))
                     all_epistatic_scores.append(epi_score)
-        else:  # Large scale: Sampling strategy (prioritize SNPs with high main effect weights)
-            # Ensure top_snps has at least one element
-            k_top = min(200, self.n_snps)
-            if k_top > 0:
-                top_snps = torch.topk(main_weights, k=k_top)[1].cpu().numpy()
-            else:
-                top_snps = np.arange(self.n_snps)
-            
+        else:
+            # Sampling strategy
             sampled_pairs = set()
-            max_attempts = n_pairs_to_sample * 3
-            for _ in range(max_attempts):
-                if len(sampled_pairs) >= n_pairs_to_sample:
-                    break
-                i = np.random.choice(top_snps)
-                j = np.random.choice(self.n_snps)
-                if i != j and (i, j) not in sampled_pairs and (j, i) not in sampled_pairs:
-                    if i < j:
-                        sampled_pairs.add((i, j))
-                    else:
-                        sampled_pairs.add((j, i))
-            
+            max_attempts = max(1, n_pairs_to_sample * 3)
+            if self.interaction_mode == 'auto':
+                # Prioritize SNPs with high main effect weights (previous behavior)
+                k_top = min(200, n_candidate)
+                if k_top > 0:
+                    top_indices = torch.topk(main_weights[candidate], k=k_top)[1].cpu().numpy()
+                    top_snps = candidate[top_indices]
+                else:
+                    top_snps = candidate
+                for _ in range(max_attempts):
+                    if len(sampled_pairs) >= n_pairs_to_sample:
+                        break
+                    i = int(np.random.choice(top_snps))
+                    j = int(np.random.choice(candidate))
+                    if i != j and (i, j) not in sampled_pairs and (j, i) not in sampled_pairs:
+                        if i < j:
+                            sampled_pairs.add((i, j))
+                        else:
+                            sampled_pairs.add((j, i))
+            else:
+                # Uniformly sample within candidate set
+                for _ in range(max_attempts):
+                    if len(sampled_pairs) >= n_pairs_to_sample:
+                        break
+                    i = int(np.random.choice(candidate))
+                    j = int(np.random.choice(candidate))
+                    if i != j and (i, j) not in sampled_pairs and (j, i) not in sampled_pairs:
+                        if i < j:
+                            sampled_pairs.add((i, j))
+                        else:
+                            sampled_pairs.add((j, i))
+
             for i, j in sampled_pairs:
                 pair_feat = torch.cat([x_final[:, i], x_final[:, j]], dim=1)
-                epi_score = torch.sigmoid(
-                    self.epistatic_pair(pair_feat)
-                ).mean(dim=0).squeeze()  # Scalar
+                epi_score = torch.sigmoid(self.epistatic_pair(pair_feat)).mean(dim=0).squeeze()
                 all_epistatic_pairs.append((i, j))
                 all_epistatic_scores.append(epi_score)
         
