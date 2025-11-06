@@ -123,8 +123,6 @@ HERITABILITY = 0.8
 
 ```
 .
-├── data/              # Input data (VCF or PED/MAP)
-├── results/           # Analysis outputs
 ├── src/               # Source code
 │   ├── __init__.py
 │   ├── data_processor.py
@@ -135,7 +133,11 @@ HERITABILITY = 0.8
 │   ├── models.py
 │   ├── training.py
 │   └── main.py
-└── tests/             # Unit tests
+├── tests/             # Unit tests
+├── data/              # Input data (VCF or PED/MAP)
+├── results/           # Analysis outputs
+├── docs/              # Documentation files
+└── README.md          # This file
 ```
 
 📖 **Detailed structure:** See [Wiki: Code Structure](https://github.com/qiqizhang0325-afk/Qi_IntraChr_InterChr_Interaction/wiki/Code-Structure)
@@ -148,7 +150,7 @@ If you use this software in your research, please cite:
 [Add your citation information here]
 ```
 
-Citation information is also available in [CITATION.cff](CITATION.cff).
+Citation information is also available in [docs/CITATION.cff](docs/CITATION.cff).
 
 ## License
 
@@ -158,7 +160,7 @@ This project is released under the [Unlicense](LICENSE), allowing free use witho
 
 - **Running Tests:** `uv run pytest` (or `pytest`)
 - **Code Quality:** Uses `ruff` for linting and formatting
-- **Contributing:** See [CONTRIBUTING.md](CONTRIBUTING.md) and [Wiki: Contributing](https://github.com/qiqizhang0325-afk/Qi_IntraChr_InterChr_Interaction/wiki/Contributing)
+- **Contributing:** See [docs/CONTRIBUTING.md](docs/CONTRIBUTING.md) and [Wiki: Contributing](https://github.com/qiqizhang0325-afk/Qi_IntraChr_InterChr_Interaction/wiki/Contributing)
 - **API Usage:** See [Wiki: API Reference](https://github.com/qiqizhang0325-afk/Qi_IntraChr_InterChr_Interaction/wiki/API-Reference)
 
 ## Links

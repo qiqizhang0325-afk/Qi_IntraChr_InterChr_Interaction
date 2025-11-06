@@ -1,0 +1,17 @@
+# Git attributes for better file display
+
+# Markdown files
+*.md linguist-documentation
+CHANGELOG.md linguist-documentation
+CONTRIBUTING.md linguist-documentation
+CODE_OF_CONDUCT.md linguist-documentation
+LICENSE linguist-documentation
+
+# Configuration files
+*.toml linguist-documentation
+*.lock linguist-documentation
+*.cff linguist-documentation
+
+# Python files
+*.py linguist-language=Python
+

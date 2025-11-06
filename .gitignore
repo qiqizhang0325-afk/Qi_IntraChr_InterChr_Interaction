@@ -193,3 +193,11 @@ github_readme.txt
 
 # Wiki directory (Wiki should be uploaded separately via GitHub Wiki)
 wiki/
+
+# Wiki repository clone (local clone of GitHub Wiki)
+*.wiki/
+
+# Temporary upload guides
+ENABLE_WIKI_FIRST.md
+UPLOAD_WIKI.md
+UPLOAD_WIKI_CMD.md
