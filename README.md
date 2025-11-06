@@ -2,7 +2,7 @@
 
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.17404819.svg)](https://doi.org/10.5281/zenodo.17404819)
 
-> 📚 **Comprehensive documentation is available in the [Wiki](https://github.com/qiqizhang0325-afk/Qi_Intra_InterChrInteraction/wiki)**
+> 📚 **Comprehensive documentation is available in the [Wiki](https://github.com/qiqizhang0325-afk/Qi_new_Intra_InterChrInteraction/wiki)**
 
 Contents
 -----------------
@@ -42,15 +42,15 @@ Key capabilities:
 
 **Method 1: Using `uv` (recommended - faster):**
 ```bash
-git clone https://github.com/qiqizhang0325-afk/Qi_Intra_InterChrInteraction.git
-cd Qi_Intra_InterChrInteraction
+git clone https://github.com/qiqizhang0325-afk/Qi_new_Intra_InterChrInteraction.git
+cd Qi_new_Intra_InterChrInteraction
 uv sync
 ```
 
 **Method 2: Using `pip`:**
 ```bash
-git clone https://github.com/qiqizhang0325-afk/Qi_Intra_InterChrInteraction.git
-cd Qi_Intra_InterChrInteraction
+git clone https://github.com/qiqizhang0325-afk/Qi_new_Intra_InterChrInteraction.git
+cd Qi_new_Intra_InterChrInteraction
 python -m venv .venv
 .venv\Scripts\activate.bat  # Windows cmd
 # or: .venv\Scripts\Activate.ps1  # Windows PowerShell
@@ -58,7 +58,7 @@ python -m venv .venv
 pip install torch numpy pandas matplotlib seaborn scipy scikit-learn psutil
 ```
 
-**Note:** For detailed installation instructions, troubleshooting, and GPU setup, see [Wiki: Installation Guide](https://github.com/qiqizhang0325-afk/Qi_Intra_InterChrInteraction/wiki/Installation).
+**Note:** For detailed installation instructions, troubleshooting, and GPU setup, see [Wiki: Installation Guide](https://github.com/qiqizhang0325-afk/Qi_new_Intra_InterChrInteraction/wiki/Installation).
 
 ## Quick Start
 
@@ -96,28 +96,28 @@ PHENOTYPE_TYPE = 'continuous'  # or 'binary'
 HERITABILITY = 0.8
 ```
 
-📖 **For detailed guides:** See [Wiki: Quick Start](https://github.com/qiqizhang0325-afk/Qi_Intra_InterChrInteraction/wiki/Quick-Start) and [Wiki: Configuration](https://github.com/qiqizhang0325-afk/Qi_Intra_InterChrInteraction/wiki/Configuration)
+📖 **For detailed guides:** See [Wiki: Quick Start](https://github.com/qiqizhang0325-afk/Qi_new_Intra_InterChrInteraction/wiki/Quick-Start) and [Wiki: Configuration](https://github.com/qiqizhang0325-afk/Qi_new_Intra_InterChrInteraction/wiki/Configuration)
 
 ## Documentation
 
-📚 **Comprehensive documentation is available in the [Wiki](https://github.com/qiqizhang0325-afk/Qi_Intra_InterChrInteraction/wiki):**
+📚 **Comprehensive documentation is available in the [Wiki](https://github.com/qiqizhang0325-afk/Qi_new_Intra_InterChrInteraction/wiki):**
 
 ### Getting Started
-- [Installation Guide](https://github.com/qiqizhang0325-afk/Qi_Intra_InterChrInteraction/wiki/Installation) - Step-by-step installation
-- [Quick Start Guide](https://github.com/qiqizhang0325-afk/Qi_Intra_InterChrInteraction/wiki/Quick-Start) - Get started in 5 minutes
-- [Data Preparation](https://github.com/qiqizhang0325-afk/Qi_Intra_InterChrInteraction/wiki/Data-Preparation) - VCF and PED/MAP formats
+- [Installation Guide](https://github.com/qiqizhang0325-afk/Qi_new_Intra_InterChrInteraction/wiki/Installation) - Step-by-step installation
+- [Quick Start Guide](https://github.com/qiqizhang0325-afk/Qi_new_Intra_InterChrInteraction/wiki/Quick-Start) - Get started in 5 minutes
+- [Data Preparation](https://github.com/qiqizhang0325-afk/Qi_new_Intra_InterChrInteraction/wiki/Data-Preparation) - VCF and PED/MAP formats
 
 ### Usage
-- [Configuration](https://github.com/qiqizhang0325-afk/Qi_Intra_InterChrInteraction/wiki/Configuration) - All configuration options
-- [Model Architecture](https://github.com/qiqizhang0325-afk/Qi_Intra_InterChrInteraction/wiki/Model-Architecture) - Model design details
-- [Output Files](https://github.com/qiqizhang0325-afk/Qi_Intra_InterChrInteraction/wiki/Output-Files) - Understanding results
-- [Performance Monitoring](https://github.com/qiqizhang0325-afk/Qi_Intra_InterChrInteraction/wiki/Performance-Monitoring) - Runtime and memory
+- [Configuration](https://github.com/qiqizhang0325-afk/Qi_new_Intra_InterChrInteraction/wiki/Configuration) - All configuration options
+- [Model Architecture](https://github.com/qiqizhang0325-afk/Qi_new_Intra_InterChrInteraction/wiki/Model-Architecture) - Model design details
+- [Output Files](https://github.com/qiqizhang0325-afk/Qi_new_Intra_InterChrInteraction/wiki/Output-Files) - Understanding results
+- [Performance Monitoring](https://github.com/qiqizhang0325-afk/Qi_new_Intra_InterChrInteraction/wiki/Performance-Monitoring) - Runtime and memory
 
 ### Reference
-- [Troubleshooting](https://github.com/qiqizhang0325-afk/Qi_Intra_InterChrInteraction/wiki/Troubleshooting) - Common issues
-- [API Reference](https://github.com/qiqizhang0325-afk/Qi_Intra_InterChrInteraction/wiki/API-Reference) - Programmatic usage
-- [Contributing](https://github.com/qiqizhang0325-afk/Qi_Intra_InterChrInteraction/wiki/Contributing) - How to contribute
-- [Code Structure](https://github.com/qiqizhang0325-afk/Qi_Intra_InterChrInteraction/wiki/Code-Structure) - Project organization
+- [Troubleshooting](https://github.com/qiqizhang0325-afk/Qi_new_Intra_InterChrInteraction/wiki/Troubleshooting) - Common issues
+- [API Reference](https://github.com/qiqizhang0325-afk/Qi_new_Intra_InterChrInteraction/wiki/API-Reference) - Programmatic usage
+- [Contributing](https://github.com/qiqizhang0325-afk/Qi_new_Intra_InterChrInteraction/wiki/Contributing) - How to contribute
+- [Code Structure](https://github.com/qiqizhang0325-afk/Qi_new_Intra_InterChrInteraction/wiki/Code-Structure) - Project organization
 
 ## Project Structure
 
@@ -138,7 +138,7 @@ HERITABILITY = 0.8
 └── tests/             # Unit tests
 ```
 
-📖 **Detailed structure:** See [Wiki: Code Structure](https://github.com/qiqizhang0325-afk/Qi_Intra_InterChrInteraction/wiki/Code-Structure)
+📖 **Detailed structure:** See [Wiki: Code Structure](https://github.com/qiqizhang0325-afk/Qi_new_Intra_InterChrInteraction/wiki/Code-Structure)
 
 ## Citation
 
@@ -158,12 +158,11 @@ This project is released under the [Unlicense](LICENSE), allowing free use witho
 
 - **Running Tests:** `uv run pytest` (or `pytest`)
 - **Code Quality:** Uses `ruff` for linting and formatting
-- **Contributing:** See [CONTRIBUTING.md](CONTRIBUTING.md) and [Wiki: Contributing](https://github.com/qiqizhang0325-afk/Qi_Intra_InterChrInteraction/wiki/Contributing)
-- **API Usage:** See [Wiki: API Reference](https://github.com/qiqizhang0325-afk/Qi_Intra_InterChrInteraction/wiki/API-Reference)
+- **Contributing:** See [CONTRIBUTING.md](CONTRIBUTING.md) and [Wiki: Contributing](https://github.com/qiqizhang0325-afk/Qi_new_Intra_InterChrInteraction/wiki/Contributing)
+- **API Usage:** See [Wiki: API Reference](https://github.com/qiqizhang0325-afk/Qi_new_Intra_InterChrInteraction/wiki/API-Reference)
 
 ## Links
 
-- **GitHub Repository:** https://github.com/qiqizhang0325-afk/Qi_Intra_InterChrInteraction
-- **Wiki Documentation:** https://github.com/qiqizhang0325-afk/Qi_Intra_InterChrInteraction/wiki
-- **Issues:** https://github.com/qiqizhang0325-afk/Qi_Intra_InterChrInteraction/issues
-"# Qi_Intra_InterChr_Interaction" 
+- **GitHub Repository:** https://github.com/qiqizhang0325-afk/Qi_new_Intra_InterChrInteraction
+- **Wiki Documentation:** https://github.com/qiqizhang0325-afk/Qi_new_Intra_InterChrInteraction/wiki
+- **Issues:** https://github.com/qiqizhang0325-afk/Qi_new_Intra_InterChrInteraction/issues
