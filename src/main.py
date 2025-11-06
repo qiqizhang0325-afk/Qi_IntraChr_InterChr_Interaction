@@ -8,7 +8,7 @@ import gc
 try:
     import psutil
     PSUTIL_AVAILABLE = True
-except ImportError:
+except (ImportError, ModuleNotFoundError):
     PSUTIL_AVAILABLE = False
     print("Warning: psutil not available. Memory monitoring will be disabled.")
 
@@ -29,7 +29,7 @@ try:
     from .dataset import SNPDataset
     from .models import InterChrModel, IntraChrModel
     from .training import integrate_results, train_model
-except ImportError:
+except (ImportError, ModuleNotFoundError):
     # Fall back to absolute imports (when run directly)
     from data_processor import VCFProcessor, PedMapProcessor
     from dataset import SNPDataset

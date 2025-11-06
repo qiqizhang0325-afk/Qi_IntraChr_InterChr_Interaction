@@ -165,11 +165,13 @@ cython_debug/
 #  option (not recommended) you can uncomment the following to ignore the entire idea folder.
 #.idea/
 
-# Data directory - ignore large data files but keep .gitkeep, README, and test file
+# Data directory - ignore large data files but keep .gitkeep, README, and test files
 data/*
 !data/.gitkeep
 !data/README.md
 !data/test.vcf
+!data/test_ped.ped
+!data/test_ped.map
 
 # Results directory - ignore generated results but keep .gitkeep and README
 # Note: Users can run the code to generate their own results

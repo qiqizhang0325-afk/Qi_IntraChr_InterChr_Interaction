@@ -6,7 +6,7 @@ import torch.nn as nn
 
 try:
     from .model_components import BiMambaBlock, PositionalEncoding
-except ImportError:
+except (ImportError, ModuleNotFoundError):
     from model_components import BiMambaBlock, PositionalEncoding
 
 

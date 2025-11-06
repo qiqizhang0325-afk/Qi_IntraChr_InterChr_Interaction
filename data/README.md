@@ -42,5 +42,5 @@ The VCF should follow the standard VCF format with:
 
 ## Your Own Data
 
-When you add your own VCF files to this directory, they will be ignored by git (to avoid uploading large files). Only the test file `test.vcf` is tracked in the repository.
+When you add your own VCF files to this directory, they will be ignored by git (to avoid uploading large files). Only the test files `test.vcf`, `test_ped.ped`, and `test_ped.map` are tracked in the repository.
 

@@ -8,7 +8,7 @@ For new code, prefer importing directly from intra_chr_model or inter_chr_model.
 try:
     from .intra_chr_model import IntraChrModel
     from .inter_chr_model import InterChrModel
-except ImportError:
+except (ImportError, ModuleNotFoundError):
     # Fallback for direct execution
     from intra_chr_model import IntraChrModel
     from inter_chr_model import InterChrModel

@@ -35,7 +35,7 @@ jobs:
 
       - name: Install package with uv
         run: |
-          uv sync --no-lock
+          uv sync
 
       - name: Run tests
         run: uv run pytest
