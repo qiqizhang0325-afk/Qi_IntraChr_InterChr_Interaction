@@ -1,10 +1,10 @@
 # Data Directory
 
-Place your VCF files in this directory.
+Place your VCF or PLINK PED/MAP files in this directory.
 
 ## Test Data
 
-A test VCF file (`test.vcf`) is included in this repository. You can use it to test the analysis pipeline:
+VCF test data: a small `test.vcf` is included. You can use it to test the analysis pipeline:
 
 ```bash
 # The test file is already in data/ directory
@@ -17,24 +17,28 @@ uv run python src/main.py
 python src/main.py
 ```
 
-## Default File
+## Default Inputs
 
-The default VCF file name is `test.vcf`. 
+- VCF default: `data/test.vcf`
+- PED/MAP default (if both exist): `data/test_ped.ped` + `data/test_ped.map`
 
-If you want to use a different file, modify the path in `src/main.py`:
+The program prefers PED/MAP if the default pair exists; otherwise it uses the VCF.
 
-```python
-vcf_path = os.path.join(data_dir, 'your_file.vcf')
-```
+## Input Formats
 
-## VCF File Format
-
-The VCF file should follow the standard VCF format with:
+### VCF
+The VCF should follow the standard VCF format with:
 - Header line starting with `#CHROM`
 - Genotype data in columns 10 onwards
 - Supported formats:
   - Integer format: directly 0/1/2 (homozygous reference/heterozygous/homozygous variant)
   - Float format (genotype dosage): will be automatically converted to 0/1/2
+
+### PLINK PED/MAP (text)
+- `.map`: 4 columns per SNP: `CHROM`, `SNP_ID`, genetic distance, `POS`
+- `.ped`: first 6 columns (FID, IID, PID, MID, SEX, PHENO) then two allele columns per SNP
+- Missing alleles like `0` are handled; genotypes are encoded as minor-allele counts (0/1/2)
+- If PED phenotype (column 6) is present, it will be used; otherwise phenotype is simulated
 
 ## Your Own Data
 

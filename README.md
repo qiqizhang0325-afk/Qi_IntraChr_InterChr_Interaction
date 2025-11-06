@@ -19,6 +19,7 @@ This package provides a deep learning framework for analyzing intra-chromosome a
 
 Key capabilities:
 - **VCF File Processing**: Parse VCF files and extract SNP genotype data
+- **PLINK PED/MAP Support**: Load PLINK text formats (PED/MAP); auto-detected if `data/test_ped.ped` and `data/test_ped.map` exist
 - **Phenotype Simulation**: Simulate continuous or binary phenotypes with configurable heritability
 - **Intra-chromosome Analysis**: Model interactions within chromosomes using BiMamba + CNN
 - **Inter-chromosome Analysis**: Model cross-chromosome interactions using BiMamba + Cross-attention
@@ -135,7 +136,9 @@ This will install all required packages. PyTorch installation may take a few min
 
 ### Prepare your data
 
-Place your VCF file in the `data/` directory:
+You can provide either a VCF file or PLINK PED/MAP files.
+
+Option A — VCF (default): Place your VCF file in the `data/` directory:
 
 ```bash
 # Copy your VCF file to data/ directory
@@ -145,7 +148,15 @@ copy your_file.vcf data\test.vcf
 
 Or use a different filename and update the path in `src/main.py`.
 
-**Note**: A test file `test.vcf` is already included in the repository, so you can skip this step if you want to test with the provided data.
+Option B — PLINK PED/MAP: Place both files in `data/` with the default names:
+
+```bash
+# Required pair (same prefix):
+#   data/test_ped.ped
+#   data/test_ped.map
+```
+
+When these exist, the program will automatically use PED/MAP instead of VCF. If a phenotype is present in the PED (6th column), it will be used; otherwise, a phenotype will be simulated as before.
 
 ### (Optional) Set up pre-commit hooks
 
@@ -181,11 +192,9 @@ This will set up code quality checks that run automatically before each commit.
    pip install torch numpy pandas matplotlib seaborn scipy scikit-learn
    ```
 
-3. **Prepare your VCF file**: 
-   - Place your VCF file in the `data/` directory
-   - The default filename is `test.vcf`
-   - A test file `test.vcf` is already included in the repository
-   - You can modify the filename in `src/main.py` if needed
+3. **Prepare your input** (choose one):
+   - VCF: put `data/test.vcf` (default); or adjust the filename in `src/main.py`
+   - PLINK PED/MAP: put `data/test_ped.ped` and `data/test_ped.map` (auto-detected)
 
 4. **Run the analysis**:
 
@@ -202,7 +211,7 @@ This will set up code quality checks that run automatically before each commit.
 **All results will be saved to the `results/` directory.**
 
 5. **Configure parameters** (optional): Edit `src/main.py` to adjust:
-   - VCF file path (default: `data/test.vcf`)
+   - Input selection is automatic: PED/MAP preferred if `data/test_ped.ped`+`.map` exist; otherwise uses VCF `data/test.vcf`
    - Model architecture (hidden dimensions, number of layers)
    - Training parameters (batch size, epochs, learning rate)
    - Phenotype type (continuous or binary)
@@ -246,16 +255,18 @@ All results are saved to the `results/` directory:
 
 ```
 .
-├── data/                    # Data directory (place your VCF files here)
+├── data/                    # Data directory (place your VCF or PED/MAP here)
 │   ├── .gitkeep
-│   └── test.vcf  # Example VCF file
+│   ├── test.vcf            # Example VCF file
+│   ├── test_ped.ped        # Optional: PLINK PED file (user-provided)
+│   └── test_ped.map        # Optional: PLINK MAP file (user-provided)
 ├── results/                  # Results directory (analysis outputs saved here)
 │   ├── .gitkeep
 │   ├── *.txt                 # Text results (main effects, interactions, training history)
 │   └── *.png                 # Visualization files (plots, heatmaps)
 ├── src/
 │   ├── __init__.py          # Package initialization and public API
-│   ├── data_processor.py    # VCF file parsing and phenotype simulation
+│   ├── data_processor.py    # VCF + PED/MAP parsing and phenotype simulation
 │   ├── dataset.py           # PyTorch Dataset class for SNP data
 │   ├── model_components.py  # BiMambaBlock and PositionalEncoding
 │   ├── models.py            # IntraChrModel and InterChrModel

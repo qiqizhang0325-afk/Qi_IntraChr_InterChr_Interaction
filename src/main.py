@@ -15,13 +15,13 @@ from torch.utils.data import DataLoader
 # Imports - handle both direct execution and module import
 try:
     # Try relative imports first (when used as a module)
-    from .data_processor import VCFProcessor
+    from .data_processor import VCFProcessor, PedMapProcessor
     from .dataset import SNPDataset
     from .models import InterChrModel, IntraChrModel
     from .training import integrate_results, train_model
 except ImportError:
     # Fall back to absolute imports (when run directly)
-    from data_processor import VCFProcessor
+    from data_processor import VCFProcessor, PedMapProcessor
     from dataset import SNPDataset
     from models import InterChrModel, IntraChrModel
     from training import integrate_results, train_model
@@ -39,9 +39,11 @@ if __name__ == "__main__":
     os.makedirs(data_dir, exist_ok=True)
     os.makedirs(results_dir, exist_ok=True)
     
-    # VCF file path - look in data/ directory
+    # Input selection: prefer PLINK PED/MAP if present, else VCF
+    ped_path = os.path.join(data_dir, 'test_ped.ped')
+    map_path = os.path.join(data_dir, 'test_ped.map')
     vcf_path = os.path.join(data_dir, 'test.vcf')
-    VCF_PATH = vcf_path  # Your test VCF file path
+    use_pedmap = os.path.exists(ped_path) and os.path.exists(map_path)
     DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     BATCH_SIZE = 4
     EPOCHS = 10
@@ -61,14 +63,36 @@ if __name__ == "__main__":
     HERITABILITY = 0.9  # Heritability
     
     # Step 1: Data preprocessing
-    processor = VCFProcessor(VCF_PATH)
-    snp_info, snp_data = processor.parse_vcf()
-    # Simulate phenotype: can choose continuous or binary
-    phenotype = processor.simulate_phenotype(
-        heritability=HERITABILITY, 
-        phenotype_type=PHENOTYPE_TYPE,
-        normalize=True  # Whether to normalize continuous phenotype
-    )
+    if use_pedmap:
+        print("Detected PED/MAP input; loading from data/test_ped.ped + data/test_ped.map")
+        processor = PedMapProcessor(ped_path, map_path)
+        snp_info, snp_data, ped_pheno = processor.parse_ped_map()
+        # Use phenotype from PED if available; otherwise simulate
+        if ped_pheno is not None and np.isfinite(ped_pheno).any():
+            # If binary requested but phenotype looks continuous, threshold at median
+            if PHENOTYPE_TYPE == 'binary':
+                med = np.nanmedian(ped_pheno)
+                phenotype = (np.nan_to_num(ped_pheno, nan=med) > med).astype(int)
+            else:
+                # continuous: impute missing with median and z-normalize
+                vals = np.nan_to_num(ped_pheno, nan=np.nanmedian(ped_pheno))
+                phenotype = (vals - vals.mean()) / (vals.std() + 1e-8)
+        else:
+            phenotype = processor.simulate_phenotype(
+                heritability=HERITABILITY,
+                phenotype_type=PHENOTYPE_TYPE,
+                normalize=True,
+            )
+    else:
+        VCF_PATH = vcf_path
+        processor = VCFProcessor(VCF_PATH)
+        snp_info, snp_data = processor.parse_vcf()
+        # Simulate phenotype: can choose continuous or binary
+        phenotype = processor.simulate_phenotype(
+            heritability=HERITABILITY,
+            phenotype_type=PHENOTYPE_TYPE,
+            normalize=True,
+        )
     intra_blocks, inter_blocks = processor.split_intra_inter_blocks()
 
     # Step 2: Train intra-chr models separately

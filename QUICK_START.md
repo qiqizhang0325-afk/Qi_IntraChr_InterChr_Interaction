@@ -46,9 +46,9 @@ Note: After activation you should see `(.venv)` in your prompt. PyTorch installa
 
 See more details in [INSTALL_WITHOUT_UV.md](INSTALL_WITHOUT_UV.md).
 
-## 3) Prepare data
+## 3) Prepare data (VCF or PED/MAP)
 
-Copy your VCF file into `data/`:
+Option A — VCF (default): copy your VCF file into `data/`:
 
 ```bash
 # Default filename is test.vcf
@@ -56,6 +56,16 @@ copy your_file.vcf data\test.vcf
 ```
 
 Or use a different filename and update the path in `src/main.py` accordingly.
+
+Option B — PLINK PED/MAP: place both files in `data/` with the same prefix:
+
+```bash
+# Example expected names
+# data\test_ped.ped
+# data\test_ped.map
+```
+
+When present, the program auto-detects PED/MAP and uses them instead of VCF. If the PED includes a phenotype (column 6), it will be used; otherwise, phenotype is simulated.
 
 ## 4) Run the analysis
 

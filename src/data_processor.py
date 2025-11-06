@@ -1,4 +1,9 @@
-"""Data preprocessing module for VCF file parsing and phenotype simulation."""
+"""Data preprocessing module for genotype parsing and phenotype simulation.
+
+Supports:
+- VCF files via `VCFProcessor`
+- PLINK PED/MAP via `PedMapProcessor`
+"""
 
 from itertools import combinations
 
@@ -265,3 +270,177 @@ class VCFProcessor:
 
 
 
+
+class PedMapProcessor:
+    """Processor for PLINK PED/MAP text formats.
+
+    Output matches VCFProcessor: `snp_info` (CHROM, POS, ID) and
+    `snp_data` as a numpy array with shape (num_snps, num_samples) in 0/1/2 coding,
+    where values are counts of the minor allele per SNP.
+    """
+
+    def __init__(self, ped_path: str, map_path: str):
+        self.ped_path = ped_path
+        self.map_path = map_path
+        self.snp_data = None
+        self.snp_info = None
+        self.phenotype = None
+        self.intra_chr_blocks = {}
+        self.inter_chr_pairs = []
+        self.inter_chr_blocks = []
+
+    def parse_ped_map(self):
+        import pandas as pd
+        import numpy as np
+
+        # Read MAP: chrom, snp_id, genetic_dist, bp_pos
+        map_df = pd.read_csv(
+            self.map_path,
+            sep="\s+",
+            header=None,
+            names=["CHROM", "ID", "GD", "POS"],
+            dtype={0: str, 1: str, 2: float, 3: int},
+        )
+        num_snps = map_df.shape[0]
+
+        # Read PED: FID IID PID MID SEX PHENO then 2 alleles per SNP
+        ped_df = pd.read_csv(self.ped_path, sep="\s+", header=None, dtype=str)
+        if ped_df.shape[1] < 6 + 2 * num_snps:
+            raise ValueError("PED/MAP mismatch: number of genotype columns does not match MAP SNPs")
+
+        meta = ped_df.iloc[:, :6].copy()
+        geno = ped_df.iloc[:, 6 : 6 + 2 * num_snps].copy()
+
+        # Build genotype matrix: num_snps x num_samples with 0/1/2 minor-allele counts
+        num_samples = ped_df.shape[0]
+        snp_mat = np.zeros((num_snps, num_samples), dtype=np.int32)
+
+        for s in range(num_snps):
+            a1 = geno.iloc[:, 2 * s].fillna("0").astype(str).values
+            a2 = geno.iloc[:, 2 * s + 1].fillna("0").astype(str).values
+            alleles = np.unique(np.concatenate([a1, a2]))
+            # Remove missing encodings '0'
+            alleles = alleles[(alleles != "0") & (alleles != "NA")]
+            if alleles.size == 0:
+                # All missing -> set to 0
+                snp_mat[s, :] = 0
+                continue
+            # Choose minor allele by frequency across all called alleles
+            # Count on concatenated alleles
+            all_calls = np.concatenate([a1, a2])
+            vals, counts = np.unique(all_calls[all_calls != "0"], return_counts=True)
+            minor_allele = vals[np.argmin(counts)] if vals.size > 0 else alleles[0]
+            # Count minor allele per sample (0/1/2)
+            snp_mat[s, :] = ((a1 == minor_allele).astype(int) + (a2 == minor_allele).astype(int))
+
+        # Missing coded as 0/1/2 with potential >2 if bad data; clip to [0,2]
+        snp_mat = np.clip(snp_mat, 0, 2)
+
+        self.snp_data = snp_mat
+        self.snp_info = map_df[["CHROM", "POS", "ID"]].copy()
+
+        # Phenotype column in PED: meta col index 5; values often 1/2 (aff/una), or -9/0 missing
+        ph = meta.iloc[:, 5].astype(str)
+        try:
+            ph_num = pd.to_numeric(ph, errors="coerce")
+        except Exception:
+            ph_num = None
+        if ph_num is not None and ph_num.notna().any():
+            # Keep as-is; map missing (-9, 0) to NaN then impute median for binary thresholding later
+            ph_clean = ph_num.replace({-9: np.nan, 0: np.nan})
+            # If still all NaN, leave None
+            if ph_clean.notna().any():
+                # Store as numpy (length = num_samples)
+                self.phenotype = ph_clean.values
+
+        n_snps, n_samples = self.snp_data.shape
+        print(f"PED/MAP parsing complete: {n_snps} SNPs, {n_samples} samples")
+        return self.snp_info, self.snp_data, self.phenotype
+
+    def split_intra_inter_blocks(self):
+        # Group by chromosome similar to VCFProcessor
+        chromosomes = self.snp_info['CHROM'].unique()
+        for chr_id in chromosomes:
+            chr_snp_idx = self.snp_info['CHROM'] == chr_id
+            self.intra_chr_blocks[chr_id] = self.snp_data[chr_snp_idx]
+        snps_per_block = [self.intra_chr_blocks[chr_id].shape[0] for chr_id in chromosomes]
+        print(
+            f"Intra-chr blocks: {len(self.intra_chr_blocks)} chromosomes, SNPs per block: {snps_per_block}"
+        )
+
+        from itertools import combinations
+        self.inter_chr_pairs = list(combinations(chromosomes, 2))
+        for chr1, chr2 in self.inter_chr_pairs:
+            chr1_snps = self.intra_chr_blocks[chr1]
+            chr2_snps = self.intra_chr_blocks[chr2]
+            inter_block = np.vstack([chr1_snps, chr2_snps])
+            self.inter_chr_blocks.append((chr1, chr2, inter_block))
+        print(f"Inter-chr blocks: {len(self.inter_chr_blocks)} pairwise combinations")
+        return self.intra_chr_blocks, self.inter_chr_blocks
+
+    def simulate_phenotype(
+        self, heritability=0.6, phenotype_type='continuous', normalize=True
+    ):
+        """Simulate phenotype using the loaded genotype matrix.
+
+        Matches the behavior of VCFProcessor.simulate_phenotype so downstream
+        code remains unchanged.
+        """
+        if self.snp_data is None:
+            raise ValueError("Genotype not loaded. Call parse_ped_map() first.")
+
+        n_samples = self.snp_data.shape[1]
+        n_snps = self.snp_data.shape[0]
+
+        # 1) Main effects
+        main_effect_snps = np.random.choice(n_snps, 5, replace=False)
+        main_effect = 0.3 * self.snp_data[main_effect_snps].sum(axis=0)
+
+        # 2) Epistatic effects
+        epistatic_pairs = [
+            (np.random.choice(n_snps), np.random.choice(n_snps)) for _ in range(3)
+        ]
+        epistatic_effect = 0.5 * sum(
+            [self.snp_data[i] * self.snp_data[j] for i, j in epistatic_pairs]
+        )
+
+        # 3) Noise
+        noise = np.random.normal(0, 1, n_samples)
+
+        # 4) Combine
+        genetic_component = main_effect + epistatic_effect
+        environmental_component = noise
+        phenotype = (
+            heritability * genetic_component + (1 - heritability) * environmental_component
+        )
+
+        # 5) Output
+        if phenotype_type == 'continuous':
+            if normalize:
+                phenotype = (phenotype - phenotype.mean()) / (phenotype.std() + 1e-8)
+            self.phenotype = phenotype
+            print(
+                f"Phenotype simulation complete: Continuous quantitative trait "
+                f"(samples: {n_samples})"
+            )
+            print(f"  - Phenotype mean: {phenotype.mean():.4f}")
+            print(f"  - Phenotype std: {phenotype.std():.4f}")
+            print(f"  - Phenotype range: [{phenotype.min():.4f}, {phenotype.max():.4f}]")
+            print(f"  - Heritability: {heritability:.2%}")
+        elif phenotype_type == 'binary':
+            threshold = np.median(phenotype)
+            self.phenotype = (phenotype > threshold).astype(int)
+            cases = self.phenotype.sum()
+            controls = n_samples - cases
+            print(
+                f"Phenotype simulation complete: Binary qualitative trait "
+                f"(cases: {cases}, controls: {controls})"
+            )
+            print(f"  - Case proportion: {self.phenotype.mean():.2%}")
+            print(f"  - Heritability: {heritability:.2%}")
+        else:
+            raise ValueError(
+                f"phenotype_type must be 'continuous' or 'binary', current: {phenotype_type}"
+            )
+
+        return self.phenotype
