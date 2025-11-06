@@ -57,16 +57,29 @@ All dependencies including exact versions are specified in the [pyproject.toml](
 
 ## Installation Guide
 
-This project uses `uv` as the package manager. To install `uv`, check out [their documentation](https://docs.astral.sh/uv/getting-started/installation/).
+### Method 1: Using `uv` (Recommended - Faster)
 
-### Step 1: Clone the repository
+This project can use `uv` as the package manager for faster installation. To install `uv`, check out [their documentation](https://docs.astral.sh/uv/getting-started/installation/).
+
+#### Step 1: Clone the repository
 
 ```bash
 git clone https://github.com/qiqizhang0325-afk/Qi_Intra_InterChrInteraction.git
 cd Qi_Intra_InterChrInteraction
 ```
 
-### Step 2: Install the package
+#### Step 2: Install `uv` (if not already installed)
+
+- **Windows PowerShell**: 
+  ```powershell
+  irm https://astral.sh/uv/install.ps1 | iex
+  ```
+- **Windows cmd / Linux/macOS**: 
+  ```bash
+  pip install uv
+  ```
+
+#### Step 3: Install dependencies
 
 ```bash
 uv sync
@@ -74,36 +87,67 @@ uv sync
 
 This will create a virtual environment and install all dependencies (PyTorch, NumPy, Pandas, Matplotlib, etc.).
 
-**Note**: If you don't have `uv` installed:
+### Method 2: Using `pip` (Alternative - Works for everyone)
 
-- **Windows PowerShell**: 
-  ```powershell
-  irm https://astral.sh/uv/install.ps1 | iex
-  ```
-- **Windows cmd** (使用 pip):
-  ```bash
-  pip install uv
-  ```
-- **Linux/macOS**: 
-  ```bash
-  curl -LsSf https://astral.sh/uv/install.sh | sh
-  ```
+If you prefer not to use `uv` or encounter installation issues, you can use the traditional `pip` method:
 
-**Alternative**: If you prefer not to use `uv`, see [INSTALL_WITHOUT_UV.md](INSTALL_WITHOUT_UV.md) for pip-based installation.
+#### Step 1: Clone the repository
 
-### Step 3: Prepare your data
+```bash
+git clone https://github.com/qiqizhang0325-afk/Qi_Intra_InterChrInteraction.git
+cd Qi_Intra_InterChrInteraction
+```
+
+#### Step 2: Create a virtual environment
+
+```bash
+python -m venv .venv
+```
+
+#### Step 3: Activate the virtual environment
+
+**Windows cmd:**
+```bash
+.venv\Scripts\activate.bat
+```
+
+**Windows PowerShell:**
+```powershell
+.venv\Scripts\Activate.ps1
+```
+
+**Linux/macOS:**
+```bash
+source .venv/bin/activate
+```
+
+You should see `(.venv)` at the beginning of your command prompt.
+
+#### Step 4: Install dependencies
+
+```bash
+pip install torch numpy pandas matplotlib seaborn scipy scikit-learn
+```
+
+This will install all required packages. PyTorch installation may take a few minutes.
+
+**Note**: For detailed pip installation instructions, see [INSTALL_WITHOUT_UV.md](INSTALL_WITHOUT_UV.md).
+
+### Prepare your data
 
 Place your VCF file in the `data/` directory:
 
 ```bash
 # Copy your VCF file to data/ directory
 # Default filename is test.vcf
-copy your_file.vcf data/test.vcf
+copy your_file.vcf data\test.vcf
 ```
 
 Or use a different filename and update the path in `src/main.py`.
 
-### Step 4: (Optional) Set up pre-commit hooks
+**Note**: A test file `test.vcf` is already included in the repository, so you can skip this step if you want to test with the provided data.
+
+### (Optional) Set up pre-commit hooks
 
 ```bash
 uv run pre-commit install
@@ -121,21 +165,39 @@ This will set up code quality checks that run automatically before each commit.
    cd Qi_Intra_InterChrInteraction
    ```
 
-2. **Install dependencies**:
+2. **Install dependencies** (choose one method):
+
+   **Using uv:**
    ```bash
    uv sync
+   ```
+
+   **Using pip:**
+   ```bash
+   python -m venv .venv
+   .venv\Scripts\activate.bat    # Windows cmd
+   # or: .venv\Scripts\Activate.ps1  # Windows PowerShell
+   # or: source .venv/bin/activate   # Linux/macOS
+   pip install torch numpy pandas matplotlib seaborn scipy scikit-learn
    ```
 
 3. **Prepare your VCF file**: 
    - Place your VCF file in the `data/` directory
    - The default filename is `test.vcf`
+   - A test file `test.vcf` is already included in the repository
    - You can modify the filename in `src/main.py` if needed
 
 4. **Run the analysis**:
 
-```bash
-uv run python src/main.py
-```
+   **Using uv:**
+   ```bash
+   uv run python src/main.py
+   ```
+
+   **Using pip (after activating virtual environment):**
+   ```bash
+   python src/main.py
+   ```
 
 **All results will be saved to the `results/` directory.**
 
@@ -253,12 +315,14 @@ Please read [CONTRIBUTING.md](CONTRIBUTING.md) for details on our code of conduc
 ### Development Setup
 
 1. Clone the repository
-2. Install development dependencies: `uv sync`
-3. Set up pre-commit hooks: `uv run pre-commit install`
+2. Install development dependencies:
+   - **Using uv**: `uv sync`
+   - **Using pip**: `python -m venv .venv` → activate → `pip install torch numpy pandas matplotlib seaborn scipy scikit-learn`
+3. Set up pre-commit hooks: `uv run pre-commit install` (or `pre-commit install` if using pip)
 4. Create a feature branch
 5. Make your changes
-6. Run tests: `uv run pytest`
-7. Run the main script: `uv run python src/main.py`
+6. Run tests: `uv run pytest` (or `pytest` if using pip)
+7. Run the main script: `uv run python src/main.py` (or `python src/main.py` if using pip)
 8. Submit a pull request
 
 For more details, see [CONTRIBUTING.md](CONTRIBUTING.md) and [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md).

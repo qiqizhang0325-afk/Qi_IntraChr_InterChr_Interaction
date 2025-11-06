@@ -11,31 +11,17 @@ cd Qi_Intra_InterChrInteraction
 
 ### 步骤 2: 安装依赖
 
-项目使用 `uv` 作为包管理器。如果你还没有安装 `uv`，请先安装：
+有两种方法安装依赖，选择其中一种：
 
-**Windows:**
+#### 方法 1: 使用 `uv`（推荐 - 更快）
 
-**方法 1: 使用 PowerShell**（推荐）
-```powershell
-# 打开 PowerShell（不是 cmd.exe）
-irm https://astral.sh/uv/install.ps1 | iex
-```
+如果你已经安装了 `uv` 或想安装它：
 
-**方法 2: 使用 pip**（如果已有 Python）
-```bash
-pip install uv
-```
+**安装 uv:**
+- **Windows PowerShell**: `irm https://astral.sh/uv/install.ps1 | iex`
+- **Windows cmd / Linux/macOS**: `pip install uv`
 
-**方法 3: 不使用 uv**（使用传统 pip）
-参见 [INSTALL_WITHOUT_UV.md](INSTALL_WITHOUT_UV.md)
-
-**Linux/macOS:**
-```bash
-curl -LsSf https://astral.sh/uv/install.sh | sh
-```
-
-然后安装项目依赖：
-
+**安装项目依赖:**
 ```bash
 uv sync
 ```
@@ -44,6 +30,30 @@ uv sync
 - 创建虚拟环境
 - 安装所有依赖（PyTorch, NumPy, Pandas 等）
 - 创建 `uv.lock` 文件（锁定依赖版本）
+
+#### 方法 2: 使用 `pip`（替代方案 - 适用于所有人）
+
+如果不想使用 uv 或安装失败，可以用传统的 pip 方法：
+
+```bash
+# 1. 创建虚拟环境
+python -m venv .venv
+
+# 2. 激活虚拟环境
+# Windows cmd:
+.venv\Scripts\activate.bat
+# Windows PowerShell:
+.venv\Scripts\Activate.ps1
+# Linux/macOS:
+source .venv/bin/activate
+
+# 3. 安装依赖
+pip install torch numpy pandas matplotlib seaborn scipy scikit-learn
+```
+
+**注意**: 激活后，命令行前面会显示 `(.venv)`。PyTorch 安装可能需要几分钟。
+
+详细说明请参考 [INSTALL_WITHOUT_UV.md](INSTALL_WITHOUT_UV.md)。
 
 ### 步骤 3: 准备数据文件
 
@@ -59,15 +69,19 @@ copy your_file.vcf data/test.vcf
 
 ### 步骤 4: 运行分析
 
+**使用 uv:**
 ```bash
 uv run python src/main.py
 ```
 
-或者激活虚拟环境后运行：
-
+**使用 pip（需要先激活虚拟环境）:**
 ```bash
-# Windows
-.venv\Scripts\activate
+# Windows cmd
+.venv\Scripts\activate.bat
+python src/main.py
+
+# Windows PowerShell
+.venv\Scripts\Activate.ps1
 python src/main.py
 
 # Linux/macOS
@@ -143,15 +157,24 @@ DEVICE = torch.device("cpu")  # 强制使用 CPU
 git clone https://github.com/qiqizhang0325-afk/Qi_Intra_InterChrInteraction.git
 cd Qi_Intra_InterChrInteraction
 
-# 2. 安装依赖
+# 2. 安装依赖（选择一种方法）
+# 方法 1: 使用 uv
 uv sync
+# 方法 2: 使用 pip
+python -m venv .venv
+.venv\Scripts\activate.bat
+pip install torch numpy pandas matplotlib seaborn scipy scikit-learn
 
 # 3. 准备数据（将你的 VCF 文件放到 data/ 目录）
 # 假设你的文件是 my_data.vcf
-copy my_data.vcf data/test.vcf
+copy my_data.vcf data\test.vcf
+# 注意：测试文件 test.vcf 已经包含在仓库中，可以跳过这一步
 
 # 4. 运行分析
+# 使用 uv:
 uv run python src/main.py
+# 使用 pip（需要先激活虚拟环境）:
+python src/main.py
 
 # 5. 查看结果
 # 打开 results/ 目录查看所有结果文件

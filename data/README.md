@@ -9,7 +9,12 @@ A test VCF file (`test.vcf`) is included in this repository. You can use it to t
 ```bash
 # The test file is already in data/ directory
 # Just run the analysis
+
+# Using uv:
 uv run python src/main.py
+
+# Using pip (after activating virtual environment):
+python src/main.py
 ```
 
 ## Default File

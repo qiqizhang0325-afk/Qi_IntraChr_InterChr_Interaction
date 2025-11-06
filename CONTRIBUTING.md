@@ -28,8 +28,19 @@ If you find a bug or have a suggestion, please:
    ```
 
 3. **Install the project**:
+   
+   **Using uv:**
    ```bash
    uv sync
+   ```
+   
+   **Using pip:**
+   ```bash
+   python -m venv .venv
+   .venv\Scripts\activate.bat    # Windows cmd
+   # or: .venv\Scripts\Activate.ps1  # Windows PowerShell
+   # or: source .venv/bin/activate   # Linux/macOS
+   pip install torch numpy pandas matplotlib seaborn scipy scikit-learn
    ```
 
 4. **Create a feature branch**:
