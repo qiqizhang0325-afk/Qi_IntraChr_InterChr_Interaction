@@ -1,125 +1,39 @@
-# GitHub Actions 工作流说明
+# GitHub Actions Workflow Explanation
 
-## 什么是 `.github/workflows`？
+## What is `.github/workflows/`?
 
-`.github/workflows` 目录包含 GitHub Actions 的配置文件，用于**自动化测试和代码质量检查**。
+This directory contains GitHub Actions configuration for automated CI (tests and checks).
 
-## 当前的工作流配置
+## Current workflow
 
-你的项目中有 `.github/workflows/cicd.yml`，它会在以下情况自动运行：
+The file `.github/workflows/cicd.yml` runs on:
+- Pushes to `main`
+- Pull requests targeting `main`
 
-1. **当你推送代码到 main 分支时**
-2. **当你创建 Pull Request 到 main 分支时**
+It performs:
+1) Checkout code
+2) Set up Python 3.12
+3) Install `uv`
+4) Install dependencies (`uv sync`)
+5) Run tests (`uv run pytest`)
 
-### 工作流会做什么？
+## Do you need it?
 
-```yaml
-1. 检出代码
-2. 设置 Python 3.12 环境
-3. 安装 uv 包管理器
-4. 安装项目依赖 (uv sync)
-5. 运行测试 (uv run pytest)
-```
+Keep it if you:
+- Plan to host on GitHub (adds trust with a green check)
+- Collaborate with others
+- Want automatic testing on every push/PR
+- Follow modern Python best practices
 
-## 你需要它吗？
+You can remove it if you:
+- Only use the project locally and do not push to GitHub
+- Do not have tests or do not want automation
 
-### ✅ **建议保留**，如果你：
+## Recommendation
 
-1. **计划将代码发布到 GitHub**
-   - 可以自动验证代码是否正常工作
-   - 显示"绿色对勾"表示测试通过，增加项目可信度
+Keep it. It’s free on GitHub, uses their infrastructure, and matches best practices.
 
-2. **与其他人协作**
-   - 确保合并的代码不会破坏现有功能
-   - 自动检查代码质量
+## How to check results
 
-3. **想要自动化测试**
-   - 每次提交代码时自动运行测试
-   - 及早发现潜在问题
-
-4. **遵循现代 Python 项目最佳实践**
-   - 这是现代 Python 项目的标准配置
-
-### ❌ **可以删除**，如果你：
-
-1. **只是个人使用，不上传到 GitHub**
-   - 本地运行不需要 GitHub Actions
-
-2. **没有测试文件或测试很简单**
-   - 当前 `tests/test_main.py` 只有一个简单的测试
-   - 如果测试不重要，可以删除工作流
-
-3. **不想使用自动化测试**
-   - 完全手动控制测试
-
-## 当前状态
-
-你的项目：
-- ✅ 有工作流配置文件 (`.github/workflows/cicd.yml`)
-- ✅ 有测试文件 (`tests/test_main.py`)，但测试很简单
-- ✅ 工作流配置正确，使用 uv 包管理器
-
-## 建议
-
-### 选项 1：保留（推荐）
-
-**优点**：
-- 符合现代 Python 项目标准
-- 如果将来要发布或协作，已经准备好了
-- 不占用本地资源（在 GitHub 服务器上运行）
-- 免费使用（GitHub 提供免费额度）
-
-**操作**：什么都不用做，保持现状
-
-### 选项 2：删除
-
-**如果你确定不需要**，可以删除：
-
-```bash
-# 删除整个 .github 目录
-rm -rf .github
-```
-
-或者只删除工作流文件：
-
-```bash
-# 只删除工作流
-rm .github/workflows/cicd.yml
-```
-
-**注意**：删除后，如果将来需要，可以重新创建。
-
-### 选项 3：改进测试
-
-如果你想充分利用 GitHub Actions，可以：
-
-1. **添加更多测试**到 `tests/test_main.py`
-2. **测试你的主要功能**：
-   - VCF 文件解析
-   - 模型训练
-   - 结果整合
-
-## 总结
-
-| 情况 | 建议 |
-|------|------|
-| 计划发布到 GitHub | ✅ 保留 |
-| 与其他人协作 | ✅ 保留 |
-| 只是个人使用，不上传 | ⚠️ 可选（保留或删除都可以） |
-| 没有测试或测试不重要 | ⚠️ 可以删除 |
-
-**我的建议**：**保留它**，因为：
-1. 不占用本地资源
-2. 免费使用
-3. 符合最佳实践
-4. 如果将来需要，已经准备好了
-5. 即使测试简单，也能验证代码可以正确安装
-
-## 如何验证工作流是否工作？
-
-1. 将代码推送到 GitHub
-2. 在 GitHub 仓库页面，点击 "Actions" 标签
-3. 你应该能看到工作流运行的状态
-
-如果看到绿色的对勾 ✅，说明一切正常！
+After pushing, open the "Actions" tab in your GitHub repository to see workflow runs and status.
 

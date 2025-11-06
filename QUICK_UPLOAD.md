@@ -1,55 +1,50 @@
-# 快速上传到 GitHub
+# Quick Upload to GitHub
 
-## 方法 1: 使用批处理脚本（最简单）
+## Option 1: Use the batch script (simplest)
 
-我已经为你创建了 `upload_to_github.bat` 文件，直接双击运行即可！
+If you have an `upload_to_github.bat` script, double-click it to upload.
 
-## 方法 2: 手动执行命令
+## Option 2: Run commands manually
 
-在项目根目录打开命令行，依次执行：
+From the project root:
 
 ```bash
-# 1. 添加所有文件
+# 1) Add files
 git add .
 
-# 2. 提交
+# 2) Commit
 git commit -m "Initial commit: QI Intra/Inter Chromosome Interaction Analysis"
 
-# 3. 设置主分支
+# 3) Set main branch
 git branch -M main
 
-# 4. 添加远程仓库
+# 4) Add remote
 git remote add origin https://github.com/qiqizhang0325-afk/Qi_Intra_InterChrInteraction.git
 
-# 5. 推送到 GitHub
+# 5) Push
 git push -u origin main
 ```
 
-## 重要：GitHub 认证
+## Authentication
 
-GitHub 不再支持密码登录，你需要：
+GitHub no longer accepts passwords — use a Personal Access Token or SSH.
 
-### 选项 1: Personal Access Token（推荐）
-
-1. 访问：https://github.com/settings/tokens
-2. 点击 "Generate new token (classic)"
-3. 选择权限：勾选 `repo`（完整仓库访问权限）
-4. 生成并复制 token
-5. 执行 `git push` 时：
+### Personal Access Token (recommended)
+1) https://github.com/settings/tokens → Generate new token (classic)
+2) Select `repo` scope
+3) When pushing:
    - Username: `qiqizhang0325-afk`
-   - Password: `粘贴你的token`（不是密码！）
+   - Password: paste your token
 
-### 选项 2: 使用 SSH
-
+### SSH (optional)
 ```bash
-# 更改远程 URL 为 SSH
 git remote set-url origin git@github.com:qiqizhang0325-afk/Qi_Intra_InterChrInteraction.git
 ```
 
-## 验证
+## Verify
 
-上传成功后，访问：
+After pushing, visit:
 https://github.com/qiqizhang0325-afk/Qi_Intra_InterChrInteraction
 
-你应该能看到所有文件！
+You should see all files.
 
