@@ -40,7 +40,7 @@ if __name__ == "__main__":
     os.makedirs(results_dir, exist_ok=True)
     
     # VCF file path - look in data/ directory
-    vcf_path = os.path.join(data_dir, 'chr1_chr2_test.vcf')
+    vcf_path = os.path.join(data_dir, 'test.vcf')
     VCF_PATH = vcf_path  # Your test VCF file path
     DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     BATCH_SIZE = 4

@@ -62,7 +62,7 @@ This project uses `uv` as the package manager. To install `uv`, check out [their
 ### Step 1: Clone the repository
 
 ```bash
-git clone https://github.com/qiqizhang0325-afk/Qi_Intra_InterChrInteraction
+git clone https://github.com/qiqizhang0325-afk/Qi_Intra_InterChrInteraction.git
 cd Qi_Intra_InterChrInteraction
 ```
 
@@ -72,9 +72,38 @@ cd Qi_Intra_InterChrInteraction
 uv sync
 ```
 
-This will create a virtual environment and install all dependencies.
+This will create a virtual environment and install all dependencies (PyTorch, NumPy, Pandas, Matplotlib, etc.).
 
-### Step 3: (Optional) Set up pre-commit hooks
+**Note**: If you don't have `uv` installed:
+
+- **Windows PowerShell**: 
+  ```powershell
+  irm https://astral.sh/uv/install.ps1 | iex
+  ```
+- **Windows cmd** (使用 pip):
+  ```bash
+  pip install uv
+  ```
+- **Linux/macOS**: 
+  ```bash
+  curl -LsSf https://astral.sh/uv/install.sh | sh
+  ```
+
+**Alternative**: If you prefer not to use `uv`, see [INSTALL_WITHOUT_UV.md](INSTALL_WITHOUT_UV.md) for pip-based installation.
+
+### Step 3: Prepare your data
+
+Place your VCF file in the `data/` directory:
+
+```bash
+# Copy your VCF file to data/ directory
+# Default filename is test.vcf
+copy your_file.vcf data/test.vcf
+```
+
+Or use a different filename and update the path in `src/main.py`.
+
+### Step 4: (Optional) Set up pre-commit hooks
 
 ```bash
 uv run pre-commit install
@@ -86,19 +115,32 @@ This will set up code quality checks that run automatically before each commit.
 
 ### Basic Usage
 
-1. **Prepare your VCF file**: 
+1. **Clone the repository** (if you haven't already):
+   ```bash
+   git clone https://github.com/qiqizhang0325-afk/Qi_Intra_InterChrInteraction.git
+   cd Qi_Intra_InterChrInteraction
+   ```
+
+2. **Install dependencies**:
+   ```bash
+   uv sync
+   ```
+
+3. **Prepare your VCF file**: 
    - Place your VCF file in the `data/` directory
-   - The default filename is `chr1_chr2_test.vcf`
+   - The default filename is `test.vcf`
    - You can modify the filename in `src/main.py` if needed
 
-2. **Run the analysis**:
+4. **Run the analysis**:
 
 ```bash
 uv run python src/main.py
 ```
 
-3. **Configure parameters** (optional): Edit `src/main.py` to adjust:
-   - VCF file path (default: `data/chr1_chr2_test.vcf`)
+**All results will be saved to the `results/` directory.**
+
+5. **Configure parameters** (optional): Edit `src/main.py` to adjust:
+   - VCF file path (default: `data/test.vcf`)
    - Model architecture (hidden dimensions, number of layers)
    - Training parameters (batch size, epochs, learning rate)
    - Phenotype type (continuous or binary)
@@ -109,7 +151,7 @@ uv run python src/main.py
 ```python
 # In src/main.py
 # VCF file is automatically looked for in data/ directory
-# vcf_path = os.path.join(data_dir, 'chr1_chr2_test.vcf')
+# vcf_path = os.path.join(data_dir, 'test.vcf')
 PHENOTYPE_TYPE = 'continuous'  # or 'binary'
 HERITABILITY = 0.9
 BATCH_SIZE = 4
@@ -144,7 +186,7 @@ All results are saved to the `results/` directory:
 .
 ├── data/                    # Data directory (place your VCF files here)
 │   ├── .gitkeep
-│   └── chr1_chr2_test.vcf  # Example VCF file
+│   └── test.vcf  # Example VCF file
 ├── results/                  # Results directory (analysis outputs saved here)
 │   ├── .gitkeep
 │   ├── *.txt                 # Text results (main effects, interactions, training history)
