@@ -1,55 +1,28 @@
-# Install Without `uv` (using pip)
+# Installation Without `uv`
 
-If you prefer not to install `uv`, you can use the standard `pip` workflow.
+> 📚 **For detailed installation instructions, see the [Wiki: Installation Guide](https://github.com/qiqizhang0325-afk/Qi_Intra_InterChrInteraction/wiki/Installation)**
 
-## Step 1: Create a virtual environment
+## Quick Install with `pip`
 
 ```bash
+# 1. Create virtual environment
 python -m venv .venv
-```
 
-## Step 2: Activate the environment
+# 2. Activate
+.venv\Scripts\activate.bat  # Windows cmd
+# or: .venv\Scripts\Activate.ps1  # Windows PowerShell
+# or: source .venv/bin/activate   # Linux/macOS
 
-**Windows cmd:**
-```bash
-.venv\Scripts\activate.bat
-```
-
-**Windows PowerShell:**
-```powershell
-.venv\Scripts\Activate.ps1
-```
-
-**Linux/macOS:**
-```bash
-source .venv/bin/activate
-```
-
-After activation, you should see `(.venv)` in your prompt.
-
-## Step 3: Install dependencies
-
-Based on `pyproject.toml`:
-
-```bash
-pip install torch>=2.0.0 numpy>=1.24.0 pandas>=2.0.0 matplotlib>=3.7.0 seaborn>=0.12.0 scipy>=1.10.0 scikit-learn>=1.3.0
-```
-
-## Step 4: Prepare data
-
-```bash
-copy your_file.vcf data\test.vcf
-```
-
-## Step 5: Run
-
-```bash
-python src/main.py
+# 3. Install dependencies
+pip install torch numpy pandas matplotlib seaborn scipy scikit-learn psutil
 ```
 
 ## Notes
 
-- Ensure the virtual environment is activated (look for `(.venv)` in the prompt)
-- PyTorch installation may take some time
-- If a GPU is available, PyTorch will use it automatically
+- Ensure Python >= 3.12
+- PyTorch installation may take several minutes
+- GPU support: Install PyTorch with CUDA from [pytorch.org](https://pytorch.org)
 
+## Alternative: Using `uv` (Faster)
+
+See [Wiki: Installation Guide](https://github.com/qiqizhang0325-afk/Qi_Intra_InterChrInteraction/wiki/Installation) for `uv` installation method.

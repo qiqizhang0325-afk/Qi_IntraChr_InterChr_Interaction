@@ -176,3 +176,18 @@ data/*
 results/*
 !results/.gitkeep
 !results/README.md
+
+# Temporary and utility files
+plink.exe
+upload_to_github.bat
+github_readme.txt
+*.log
+*.nosex
+
+# PLINK binary files (users should generate their own)
+*.bed
+*.bim
+*.fam
+
+# Wiki directory (Wiki should be uploaded separately via GitHub Wiki)
+wiki/

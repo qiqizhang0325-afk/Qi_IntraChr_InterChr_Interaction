@@ -2,6 +2,15 @@
 
 import os
 import sys
+import time
+import gc
+
+try:
+    import psutil
+    PSUTIL_AVAILABLE = True
+except ImportError:
+    PSUTIL_AVAILABLE = False
+    print("Warning: psutil not available. Memory monitoring will be disabled.")
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -11,6 +20,7 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 from torch.utils.data import DataLoader
+from sklearn.metrics import r2_score, roc_auc_score, mean_squared_error
 
 # Imports - handle both direct execution and module import
 try:
@@ -60,9 +70,72 @@ if __name__ == "__main__":
 
     # Phenotype type configuration
     PHENOTYPE_TYPE = 'continuous'  # 'continuous' or 'binary'
-    HERITABILITY = 0.9  # Heritability
+    HERITABILITY = 0.8  # Heritability
+    
+    # Interaction mode configuration
+    # Options:
+    #   - 'auto': Original behavior (small scale: all pairs; large scale: sample biased by main weights)
+    #   - 'main_nonzero': Calculate interactions only among SNPs with main weight > threshold
+    #   - 'all': Calculate interactions among all SNPs (no sampling/truncation)
+    INTERACTION_MODE = 'main_nonzero'  # 'auto', 'main_nonzero', or 'all'
+    
+    # Main weight threshold configuration (for 'main_nonzero' mode)
+    # Threshold mode options:
+    #   - 'absolute': Use absolute threshold value (e.g., 0.5 means weight > 0.5)
+    #   - 'median': Use median of main_weights as threshold (adaptive)
+    #   - 'mean': Use mean of main_weights as threshold (adaptive)
+    #   - 'percentile': Use percentile (threshold value as percentile, e.g., 0.75 = 75th percentile)
+    MAIN_WEIGHT_THRESHOLD_MODE = 'percentile'  # 'absolute', 'median', 'mean', or 'percentile'
+    MAIN_WEIGHT_THRESHOLD = 0.75  # For 'absolute': threshold value; for 'percentile': percentile (0-1)
+    
+    # Performance monitoring
+    start_time = time.time()
+    timing_info = {}
+    memory_info = {}
+    
+    if PSUTIL_AVAILABLE:
+        process = psutil.Process(os.getpid())
+        initial_memory = process.memory_info().rss / 1024 / 1024  # MB
+        
+        def get_memory_usage():
+            """Get current memory usage in MB"""
+            gc.collect()
+            if torch.cuda.is_available():
+                torch.cuda.empty_cache()
+            return process.memory_info().rss / 1024 / 1024
+    else:
+        initial_memory = 0.0
+        
+        def get_memory_usage():
+            """Get current memory usage in MB (not available)"""
+            return 0.0
+    
+    def print_timing(label, start, end):
+        """Print timing information"""
+        elapsed = end - start
+        timing_info[label] = elapsed
+        print(f"[Timing] {label}: {elapsed:.2f} seconds")
+    
+    def print_memory(label, current):
+        """Print memory usage"""
+        memory_info[label] = current
+        if PSUTIL_AVAILABLE:
+            print(f"[Memory] {label}: {current:.2f} MB (Δ: {current - initial_memory:+.2f} MB)")
+        else:
+            print(f"[Memory] {label}: Not available")
+    
+    print("=" * 80)
+    print("SNP Interaction Analysis - Performance Monitoring")
+    print("=" * 80)
+    print(f"Device: {DEVICE}")
+    if PSUTIL_AVAILABLE:
+        print(f"Initial Memory: {initial_memory:.2f} MB")
+    else:
+        print("Memory monitoring: Not available (psutil not installed)")
+    print("=" * 80)
     
     # Step 1: Data preprocessing
+    step1_start = time.time()
     if use_pedmap:
         print("Detected PED/MAP input; loading from data/test_ped.ped + data/test_ped.map")
         processor = PedMapProcessor(ped_path, map_path)
@@ -83,19 +156,26 @@ if __name__ == "__main__":
                 phenotype_type=PHENOTYPE_TYPE,
                 normalize=True,
             )
+        # Split into intra/inter blocks for PED/MAP
+        intra_blocks, inter_blocks = processor.split_intra_inter_blocks()
     else:
         VCF_PATH = vcf_path
         processor = VCFProcessor(VCF_PATH)
         snp_info, snp_data = processor.parse_vcf()
         # Simulate phenotype: can choose continuous or binary
         phenotype = processor.simulate_phenotype(
-            heritability=HERITABILITY,
+            heritability=HERITABILITY, 
             phenotype_type=PHENOTYPE_TYPE,
             normalize=True,
         )
-    intra_blocks, inter_blocks = processor.split_intra_inter_blocks()
+        intra_blocks, inter_blocks = processor.split_intra_inter_blocks()
+    
+    step1_end = time.time()
+    print_timing("Data Preprocessing", step1_start, step1_end)
+    print_memory("After Data Preprocessing", get_memory_usage())
 
     # Step 2: Train intra-chr models separately
+    step2_start = time.time()
     # Select loss function according to phenotype type
     if PHENOTYPE_TYPE == 'binary':
         criterion = nn.BCELoss()
@@ -129,7 +209,10 @@ if __name__ == "__main__":
             n_cnn_layers=N_CNN_LAYERS,
             n_bimamba_layers=N_BIMAMBA_LAYERS,
             n_transformer_layers=N_TRANSFORMER_LAYERS,
-            use_transformer=USE_TRANSFORMER
+            use_transformer=USE_TRANSFORMER,
+            interaction_mode=INTERACTION_MODE,
+            main_weight_threshold=MAIN_WEIGHT_THRESHOLD,
+            main_weight_threshold_mode=MAIN_WEIGHT_THRESHOLD_MODE
         )
         optimizer = optim.Adam(model.parameters(), lr=LEARNING_RATE, weight_decay=1e-5)
         
@@ -158,8 +241,13 @@ if __name__ == "__main__":
                 sample_snps = dataset[0][0].unsqueeze(0).to(DEVICE)
                 _, main_weights, epi_pairs, epi_scores = trained_model(sample_snps)
         intra_results[chr_id] = (main_weights, chr_snp_idx, epi_pairs, epi_scores)
+    
+    step2_end = time.time()
+    print_timing("Intra-chr Model Training", step2_start, step2_end)
+    print_memory("After Intra-chr Training", get_memory_usage())
 
     # Step 3: Train inter-chr models separately
+    step3_start = time.time()
     # key: (chr1, chr2), value: (main effect weights, chr1/chr2 SNP indices, epi_pairs, epi_scores)
     inter_results = {}
     # key: (chr1, chr2), value: training history
@@ -216,8 +304,13 @@ if __name__ == "__main__":
                 sample_snps = dataset[0][0].unsqueeze(0).to(DEVICE)
                 _, main_weights, epi_pairs, epi_scores = trained_model(sample_snps)
         inter_results[(chr1, chr2)] = (main_weights, chr1_snp_idx, chr2_snp_idx, epi_pairs, epi_scores)
+    
+    step3_end = time.time()
+    print_timing("Inter-chr Model Training", step3_start, step3_end)
+    print_memory("After Inter-chr Training", get_memory_usage())
 
     # Step 4: Result integration and output
+    step4_start = time.time()
     main_df_top10, epistatic_df_top10, main_df_all, epistatic_df_all = integrate_results(
         intra_results, inter_results, snp_info
     )
@@ -538,4 +631,93 @@ if __name__ == "__main__":
     )
     plt.close()
     print("Epistatic interaction heatmaps saved: results/epistatic_heatmap_top10.png, results/epistatic_heatmap_all.png")
+    
+    step4_end = time.time()
+    print_timing("Result Integration and Visualization", step4_start, step4_end)
+    print_memory("After Result Integration", get_memory_usage())
+    
+    # Model Performance Evaluation
+    print("\n" + "=" * 80)
+    print("Model Performance Summary")
+    print("=" * 80)
+    
+    # Calculate average metrics from training histories
+    all_train_metrics = []
+    all_val_metrics = []
+    all_train_losses = []
+    all_val_losses = []
+    
+    for chr_id, history in intra_histories.items():
+        all_train_metrics.extend(history['train_metric'])
+        all_val_metrics.extend(history['val_metric'])
+        all_train_losses.extend(history['train_loss'])
+        all_val_losses.extend(history['val_loss'])
+    
+    for (chr1, chr2), history in inter_histories.items():
+        all_train_metrics.extend(history['train_metric'])
+        all_val_metrics.extend(history['val_metric'])
+        all_train_losses.extend(history['train_loss'])
+        all_val_losses.extend(history['val_loss'])
+    
+    if all_train_metrics:
+        metric_name_display = 'R²' if PHENOTYPE_TYPE == 'continuous' else 'AUC'
+        print(f"\nAverage Training {metric_name_display}: {np.mean(all_train_metrics):.4f} ± {np.std(all_train_metrics):.4f}")
+        print(f"Average Validation {metric_name_display}: {np.mean(all_val_metrics):.4f} ± {np.std(all_val_metrics):.4f}")
+        print(f"Average Training Loss: {np.mean(all_train_losses):.4f} ± {np.std(all_train_losses):.4f}")
+        print(f"Average Validation Loss: {np.mean(all_val_losses):.4f} ± {np.std(all_val_losses):.4f}")
+    
+    # Performance Summary
+    total_time = time.time() - start_time
+    final_memory = get_memory_usage()
+    
+    print("\n" + "=" * 80)
+    print("Performance Summary")
+    print("=" * 80)
+    print(f"Total Runtime: {total_time:.2f} seconds ({total_time/60:.2f} minutes)")
+    print(f"\nTiming Breakdown:")
+    for label, elapsed in timing_info.items():
+        percentage = (elapsed / total_time) * 100
+        print(f"  {label:<35}: {elapsed:>8.2f}s ({percentage:>5.1f}%)")
+    
+    print(f"\nMemory Usage:")
+    if PSUTIL_AVAILABLE:
+        print(f"  Initial Memory: {initial_memory:.2f} MB")
+        print(f"  Final Memory: {final_memory:.2f} MB")
+        print(f"  Peak Memory Increase: {final_memory - initial_memory:.2f} MB")
+        for label, mem in memory_info.items():
+            print(f"  {label:<35}: {mem:>8.2f} MB")
+    else:
+        print("  Memory monitoring not available (psutil not installed)")
+    
+    # Save performance summary to file
+    perf_summary_path = os.path.join(results_dir, 'performance_summary.txt')
+    with open(perf_summary_path, 'w', encoding='utf-8') as f:
+        f.write("Performance Summary\n")
+        f.write("=" * 80 + "\n\n")
+        f.write(f"Device: {DEVICE}\n")
+        f.write(f"Total Runtime: {total_time:.2f} seconds ({total_time/60:.2f} minutes)\n\n")
+        f.write("Timing Breakdown:\n")
+        for label, elapsed in timing_info.items():
+            percentage = (elapsed / total_time) * 100
+            f.write(f"  {label}: {elapsed:.2f}s ({percentage:.1f}%)\n")
+        f.write(f"\nMemory Usage:\n")
+        if PSUTIL_AVAILABLE:
+            f.write(f"  Initial Memory: {initial_memory:.2f} MB\n")
+            f.write(f"  Final Memory: {final_memory:.2f} MB\n")
+            f.write(f"  Peak Memory Increase: {final_memory - initial_memory:.2f} MB\n")
+            for label, mem in memory_info.items():
+                f.write(f"  {label}: {mem:.2f} MB\n")
+        else:
+            f.write("  Memory monitoring not available (psutil not installed)\n")
+        if all_train_metrics:
+            f.write(f"\nModel Performance:\n")
+            f.write(f"  Average Training {metric_name_display}: {np.mean(all_train_metrics):.4f} ± {np.std(all_train_metrics):.4f}\n")
+            f.write(f"  Average Validation {metric_name_display}: {np.mean(all_val_metrics):.4f} ± {np.std(all_val_metrics):.4f}\n")
+            f.write(f"  Average Training Loss: {np.mean(all_train_losses):.4f} ± {np.std(all_train_losses):.4f}\n")
+            f.write(f"  Average Validation Loss: {np.mean(all_val_losses):.4f} ± {np.std(all_val_losses):.4f}\n")
+    
+    print(f"\nPerformance summary saved to: {perf_summary_path}")
+    print("=" * 80)
+    print("Analysis Complete!")
+    print("=" * 80)
     

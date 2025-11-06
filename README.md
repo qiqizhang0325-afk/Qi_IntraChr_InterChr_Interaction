@@ -2,16 +2,16 @@
 
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.17404819.svg)](https://doi.org/10.5281/zenodo.17404819)
 
+> 📚 **Comprehensive documentation is available in the [Wiki](https://github.com/qiqizhang0325-afk/Qi_Intra_InterChrInteraction/wiki)**
+
 Contents
 -----------------
 - [Overview](#overview)
-- [Features](#features)
-- [System Requirements](#system-requirements)
-- [Installation Guide](#installation-guide)
 - [Quick Start](#quick-start)
+- [Installation](#installation)
+- [Documentation](#documentation)
 - [Project Structure](#project-structure)
-- [Attribution](#attribution)
-- [For Developers](#for-developers)
+- [Citation](#citation)
 
 ## Overview
 
@@ -34,318 +34,133 @@ Key capabilities:
 - **Interpretable Outputs**: Provides main effect weights and epistatic interaction scores
 - **Visualization**: Generates Manhattan plots and interaction heatmaps
 
-## System Requirements
+## Installation
 
-### OS Requirements
+**Requirements:** Python >= 3.12
 
-This package has been tested on:
-- Windows 10/11
-- Linux (Ubuntu 20.04+)
-- macOS (10.15+)
+### Quick Install
 
-### Python Dependencies
-
-- Python >= 3.12
-- PyTorch >= 2.0.0 (with CUDA support recommended for GPU acceleration)
-- NumPy >= 1.24.0
-- Pandas >= 2.0.0
-- Matplotlib >= 3.7.0
-- Seaborn >= 0.12.0
-- SciPy >= 1.10.0
-- scikit-learn >= 1.3.0
-
-All dependencies including exact versions are specified in the [pyproject.toml](./pyproject.toml) file.
-
-## Installation Guide
-
-### Method 1: Using `uv` (Recommended - Faster)
-
-This project can use `uv` as the package manager for faster installation. To install `uv`, check out [their documentation](https://docs.astral.sh/uv/getting-started/installation/).
-
-#### Step 1: Clone the repository
-
+**Method 1: Using `uv` (recommended - faster):**
 ```bash
 git clone https://github.com/qiqizhang0325-afk/Qi_Intra_InterChrInteraction.git
 cd Qi_Intra_InterChrInteraction
-```
-
-#### Step 2: Install `uv` (if not already installed)
-
-- **Windows PowerShell**: 
-  ```powershell
-  irm https://astral.sh/uv/install.ps1 | iex
-  ```
-- **Windows cmd / Linux/macOS**: 
-  ```bash
-  pip install uv
-  ```
-
-#### Step 3: Install dependencies
-
-```bash
 uv sync
 ```
 
-This will create a virtual environment and install all dependencies (PyTorch, NumPy, Pandas, Matplotlib, etc.).
-
-### Method 2: Using `pip` (Alternative - Works for everyone)
-
-If you prefer not to use `uv` or encounter installation issues, you can use the traditional `pip` method:
-
-#### Step 1: Clone the repository
-
+**Method 2: Using `pip`:**
 ```bash
 git clone https://github.com/qiqizhang0325-afk/Qi_Intra_InterChrInteraction.git
 cd Qi_Intra_InterChrInteraction
-```
-
-#### Step 2: Create a virtual environment
-
-```bash
 python -m venv .venv
+.venv\Scripts\activate.bat  # Windows cmd
+# or: .venv\Scripts\Activate.ps1  # Windows PowerShell
+# or: source .venv/bin/activate   # Linux/macOS
+pip install torch numpy pandas matplotlib seaborn scipy scikit-learn psutil
 ```
 
-#### Step 3: Activate the virtual environment
-
-**Windows cmd:**
-```bash
-.venv\Scripts\activate.bat
-```
-
-**Windows PowerShell:**
-```powershell
-.venv\Scripts\Activate.ps1
-```
-
-**Linux/macOS:**
-```bash
-source .venv/bin/activate
-```
-
-You should see `(.venv)` at the beginning of your command prompt.
-
-#### Step 4: Install dependencies
-
-```bash
-pip install torch numpy pandas matplotlib seaborn scipy scikit-learn
-```
-
-This will install all required packages. PyTorch installation may take a few minutes.
-
-**Note**: For detailed pip installation instructions, see [INSTALL_WITHOUT_UV.md](INSTALL_WITHOUT_UV.md).
-
-### Prepare your data
-
-You can provide either a VCF file or PLINK PED/MAP files.
-
-Option A — VCF (default): Place your VCF file in the `data/` directory:
-
-```bash
-# Copy your VCF file to data/ directory
-# Default filename is test.vcf
-copy your_file.vcf data\test.vcf
-```
-
-Or use a different filename and update the path in `src/main.py`.
-
-Option B — PLINK PED/MAP: Place both files in `data/` with the default names:
-
-```bash
-# Required pair (same prefix):
-#   data/test_ped.ped
-#   data/test_ped.map
-```
-
-When these exist, the program will automatically use PED/MAP instead of VCF. If a phenotype is present in the PED (6th column), it will be used; otherwise, a phenotype will be simulated as before.
-
-### (Optional) Set up pre-commit hooks
-
-```bash
-uv run pre-commit install
-```
-
-This will set up code quality checks that run automatically before each commit.
+**Note:** For detailed installation instructions, troubleshooting, and GPU setup, see [Wiki: Installation Guide](https://github.com/qiqizhang0325-afk/Qi_Intra_InterChrInteraction/wiki/Installation).
 
 ## Quick Start
 
-### Basic Usage
+1. **Install dependencies** (see [Installation](#installation) above)
 
-1. **Clone the repository** (if you haven't already):
+2. **Prepare your data:**
+   - **VCF**: Place `data/test.vcf` (or update path in `src/main.py`)
+   - **PLINK PED/MAP**: Place `data/test_ped.ped` and `data/test_ped.map` (auto-detected if both exist)
+
+3. **Run the analysis:**
    ```bash
-   git clone https://github.com/qiqizhang0325-afk/Qi_Intra_InterChrInteraction.git
-   cd Qi_Intra_InterChrInteraction
+   uv run python src/main.py  # or: python src/main.py (with venv activated)
    ```
 
-2. **Install dependencies** (choose one method):
+4. **View results** in the `results/` directory:
+   - Text files: `main_effect_results_*.txt`, `epistatic_interactions_*.txt`, `training_history.txt`, `performance_summary.txt`
+   - Visualizations: `main_effect_manhattan_*.png`, `epistatic_heatmap_*.png`, `training_curves_*.png`
 
-   **Using uv:**
-   ```bash
-   uv sync
-   ```
+### Basic Configuration
 
-   **Using pip:**
-   ```bash
-   python -m venv .venv
-   .venv\Scripts\activate.bat    # Windows cmd
-   # or: .venv\Scripts\Activate.ps1  # Windows PowerShell
-   # or: source .venv/bin/activate   # Linux/macOS
-   pip install torch numpy pandas matplotlib seaborn scipy scikit-learn
-   ```
-
-3. **Prepare your input** (choose one):
-   - VCF: put `data/test.vcf` (default); or adjust the filename in `src/main.py`
-   - PLINK PED/MAP: put `data/test_ped.ped` and `data/test_ped.map` (auto-detected)
-
-4. **Run the analysis**:
-
-   **Using uv:**
-   ```bash
-   uv run python src/main.py
-   ```
-
-   **Using pip (after activating virtual environment):**
-   ```bash
-   python src/main.py
-   ```
-
-**All results will be saved to the `results/` directory.**
-
-5. **Configure parameters** (optional): Edit `src/main.py` to adjust:
-   - Input selection is automatic: PED/MAP preferred if `data/test_ped.ped`+`.map` exist; otherwise uses VCF `data/test.vcf`
-   - Model architecture (hidden dimensions, number of layers)
-   - Training parameters (batch size, epochs, learning rate)
-   - Phenotype type (continuous or binary)
-   - Heritability
-
-### Example Configuration
+Edit `src/main.py` to customize:
 
 ```python
-# In src/main.py
-# VCF file is automatically looked for in data/ directory
-# vcf_path = os.path.join(data_dir, 'test.vcf')
-PHENOTYPE_TYPE = 'continuous'  # or 'binary'
-HERITABILITY = 0.9
+# Training
 BATCH_SIZE = 4
 EPOCHS = 50
+LEARNING_RATE = 1e-3
+
+# Model
 HIDDEN_DIM = 128
+INTERACTION_MODE = 'main_nonzero'  # 'auto', 'main_nonzero', or 'all'
+
+# Phenotype
+PHENOTYPE_TYPE = 'continuous'  # or 'binary'
+HERITABILITY = 0.8
 ```
 
-### Output Files
+📖 **For detailed guides:** See [Wiki: Quick Start](https://github.com/qiqizhang0325-afk/Qi_Intra_InterChrInteraction/wiki/Quick-Start) and [Wiki: Configuration](https://github.com/qiqizhang0325-afk/Qi_Intra_InterChrInteraction/wiki/Configuration)
 
-All results are saved to the `results/` directory:
+## Documentation
 
-**Text Files:**
-- `results/main_effect_results_top10.txt`: Top 10 SNPs with highest main effect weights
-- `results/main_effect_results_all.txt`: All SNPs with main effect weights (sorted by score)
-- `results/epistatic_interactions_top10.txt`: Top 10 epistatic interaction pairs
-- `results/epistatic_interactions_all.txt`: All epistatic interaction pairs (sorted by score)
-- `results/training_history.txt`: Training history for all models
+📚 **Comprehensive documentation is available in the [Wiki](https://github.com/qiqizhang0325-afk/Qi_Intra_InterChrInteraction/wiki):**
 
-**Visualization Files:**
-- `results/training_curves_intra_chr*.png`: Training curves for intra-chromosome models
-- `results/training_curves_inter_*.png`: Training curves for inter-chromosome models
-- `results/main_effect_manhattan_top10.png`: Manhattan plot of Top 10 main effects
-- `results/main_effect_manhattan_all.png`: Manhattan plot of all main effects
-- `results/epistatic_heatmap_top10.png`: Heatmap of Top 10 epistatic interactions
-- `results/epistatic_heatmap_all.png`: Heatmap of all epistatic interactions
+### Getting Started
+- [Installation Guide](https://github.com/qiqizhang0325-afk/Qi_Intra_InterChrInteraction/wiki/Installation) - Step-by-step installation
+- [Quick Start Guide](https://github.com/qiqizhang0325-afk/Qi_Intra_InterChrInteraction/wiki/Quick-Start) - Get started in 5 minutes
+- [Data Preparation](https://github.com/qiqizhang0325-afk/Qi_Intra_InterChrInteraction/wiki/Data-Preparation) - VCF and PED/MAP formats
 
-**Note**: To see example results, run the analysis with the provided test data in `data/` directory.
+### Usage
+- [Configuration](https://github.com/qiqizhang0325-afk/Qi_Intra_InterChrInteraction/wiki/Configuration) - All configuration options
+- [Model Architecture](https://github.com/qiqizhang0325-afk/Qi_Intra_InterChrInteraction/wiki/Model-Architecture) - Model design details
+- [Output Files](https://github.com/qiqizhang0325-afk/Qi_Intra_InterChrInteraction/wiki/Output-Files) - Understanding results
+- [Performance Monitoring](https://github.com/qiqizhang0325-afk/Qi_Intra_InterChrInteraction/wiki/Performance-Monitoring) - Runtime and memory
+
+### Reference
+- [Troubleshooting](https://github.com/qiqizhang0325-afk/Qi_Intra_InterChrInteraction/wiki/Troubleshooting) - Common issues
+- [API Reference](https://github.com/qiqizhang0325-afk/Qi_Intra_InterChrInteraction/wiki/API-Reference) - Programmatic usage
+- [Contributing](https://github.com/qiqizhang0325-afk/Qi_Intra_InterChrInteraction/wiki/Contributing) - How to contribute
+- [Code Structure](https://github.com/qiqizhang0325-afk/Qi_Intra_InterChrInteraction/wiki/Code-Structure) - Project organization
 
 ## Project Structure
 
 ```
 .
-├── data/                    # Data directory (place your VCF or PED/MAP here)
-│   ├── .gitkeep
-│   ├── test.vcf            # Example VCF file
-│   ├── test_ped.ped        # Optional: PLINK PED file (user-provided)
-│   └── test_ped.map        # Optional: PLINK MAP file (user-provided)
-├── results/                  # Results directory (analysis outputs saved here)
-│   ├── .gitkeep
-│   ├── *.txt                 # Text results (main effects, interactions, training history)
-│   └── *.png                 # Visualization files (plots, heatmaps)
-├── src/
-│   ├── __init__.py          # Package initialization and public API
-│   ├── data_processor.py    # VCF + PED/MAP parsing and phenotype simulation
-│   ├── dataset.py           # PyTorch Dataset class for SNP data
-│   ├── model_components.py  # BiMambaBlock and PositionalEncoding
-│   ├── models.py            # IntraChrModel and InterChrModel
-│   ├── training.py          # Training functions and result integration
-│   └── main.py              # Main execution script
-└── tests/                   # Unit tests
+├── data/              # Input data (VCF or PED/MAP)
+├── results/           # Analysis outputs
+├── src/               # Source code
+│   ├── data_processor.py
+│   ├── dataset.py
+│   ├── intra_chr_model.py
+│   ├── inter_chr_model.py
+│   ├── models.py
+│   ├── training.py
+│   └── main.py
+└── tests/             # Unit tests
 ```
 
-## Attribution
+📖 **Detailed structure:** See [Wiki: Code Structure](https://github.com/qiqizhang0325-afk/Qi_Intra_InterChrInteraction/wiki/Code-Structure)
 
-### License
+## Citation
+
+If you use this software in your research, please cite:
+
+```bibtex
+[Add your citation information here]
+```
+
+Citation information is also available in [CITATION.cff](CITATION.cff).
+
+## License
 
 This project is released under the [Unlicense](LICENSE), allowing free use without restrictions.
 
-### Citation
-
-If you use this software in your research, please cite it using the information in [CITATION.cff](CITATION.cff). You can generate a citation using:
-
-```bash
-# Using cffconvert (if installed)
-cffconvert -i CITATION.cff -f bibtex
-```
-
-### Publications
-
-[Add your publication information here when available]
-
-### Acknowledgements
-
-[Add acknowledgements, funding information, etc.]
-
 ## For Developers
 
-### Running Tests
+- **Running Tests:** `uv run pytest` (or `pytest`)
+- **Code Quality:** Uses `ruff` for linting and formatting
+- **Contributing:** See [CONTRIBUTING.md](CONTRIBUTING.md) and [Wiki: Contributing](https://github.com/qiqizhang0325-afk/Qi_Intra_InterChrInteraction/wiki/Contributing)
+- **API Usage:** See [Wiki: API Reference](https://github.com/qiqizhang0325-afk/Qi_Intra_InterChrInteraction/wiki/API-Reference)
 
-```bash
-uv run pytest
-```
+## Links
 
-### Code Quality
-
-The project uses:
-- **ruff**: For linting and code formatting
-- **pre-commit**: For automated code quality checks
-
-To run linting manually:
-
-```bash
-uv run ruff check src/
-uv run ruff format src/
-```
-
-### Contributing
-
-Please read [CONTRIBUTING.md](CONTRIBUTING.md) for details on our code of conduct and the process for submitting pull requests.
-
-### Development Setup
-
-1. Clone the repository
-2. Install development dependencies:
-   - **Using uv**: `uv sync`
-   - **Using pip**: `python -m venv .venv` → activate → `pip install torch numpy pandas matplotlib seaborn scipy scikit-learn`
-3. Set up pre-commit hooks: `uv run pre-commit install` (or `pre-commit install` if using pip)
-4. Create a feature branch
-5. Make your changes
-6. Run tests: `uv run pytest` (or `pytest` if using pip)
-7. Run the main script: `uv run python src/main.py` (or `python src/main.py` if using pip)
-8. Submit a pull request
-
-For more details, see [CONTRIBUTING.md](CONTRIBUTING.md) and [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md).
-
-### Using as a Package
-
-You can also import and use the modules directly:
-
-```python
-from src import VCFProcessor, IntraChrModel, InterChrModel, train_model
-
-# Or import specific modules
-from src.data_processor import VCFProcessor
-from src.models import IntraChrModel, InterChrModel
-```
+- **GitHub Repository:** https://github.com/qiqizhang0325-afk/Qi_Intra_InterChrInteraction
+- **Wiki Documentation:** https://github.com/qiqizhang0325-afk/Qi_Intra_InterChrInteraction/wiki
+- **Issues:** https://github.com/qiqizhang0325-afk/Qi_Intra_InterChrInteraction/issues
